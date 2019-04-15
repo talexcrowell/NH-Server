@@ -11,7 +11,8 @@ const { PORT, CLIENT_ORIGIN, DATABASE_URL } = require('./config');
 const localStrategy = require('./passport/local'); 
 const jwtStrategy = require('./passport/jwt'); 
 
-const authRouter = require('./routes/auth'); 
+const authRouter = require('./routes/auth');
+const rexRouter = require('./routes/rex'); 
 
 const app = express(); 
 mongoose.Promise = global.Promise; 
@@ -33,7 +34,8 @@ passport.use(jwtStrategy);
 
 const jwtAuth =  passport.authenticate('jwt', { session: false, failWithError: true }); 
 
-app.use('/api/auth', authRouter); 
+app.use('/api/auth', authRouter);
+app.use('/api/rex', rexRouter);  
 
 // Custom 404 Not Found Error Handler
 app.use((req, res, next) => { 
