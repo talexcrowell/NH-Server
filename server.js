@@ -12,7 +12,8 @@ const localStrategy = require('./passport/local');
 const jwtStrategy = require('./passport/jwt'); 
 
 const authRouter = require('./routes/auth');
-const rexRouter = require('./routes/rex'); 
+const newsRouter = require('./routes/news');
+const communityRouter = require('./routes/community'); 
 
 const app = express(); 
 mongoose.Promise = global.Promise; 
@@ -35,7 +36,8 @@ passport.use(jwtStrategy);
 const jwtAuth =  passport.authenticate('jwt', { session: false, failWithError: true }); 
 
 app.use('/api/auth', authRouter);
-app.use('/api/rex', rexRouter);  
+app.use('/api/news', newsRouter);
+app.use('/api/community', communityRouter);  
 
 // Custom 404 Not Found Error Handler
 app.use((req, res, next) => { 
@@ -55,14 +57,14 @@ app.use((err, req, res, next) => {
 }); 
 
 if (require.main === module) {
-  mongoose.connect(DATABASE_URL, {useNewUrlParser: true })
-    .then(instance => { 
-      const conn = instance.connections[0]; 
-      console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
-    })
-    .catch(err => { 
-      console.error('Error connecting to MONGO:', err); 
-    }); 
+  // mongoose.connect(DATABASE_URL, {useNewUrlParser: true })
+  //   .then(instance => { 
+  //     const conn = instance.connections[0]; 
+  //     console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
+  //   })
+  //   .catch(err => { 
+  //     console.error('Error connecting to MONGO:', err); 
+  //   }); 
 
   app.listen(PORT, function () { 
     console.info(`Server listening on ${this.address().port}`); 
