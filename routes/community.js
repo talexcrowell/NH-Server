@@ -12,14 +12,14 @@ function standardizeImgurData(results){
       let imgArr = item.images[0];
       img = imgArr.link;
     }
-    return{
+    return {
       url: item.link,
       title: item.title,
       img: img, 
       publishedAt: item.datetime,
-      source: 'imgur.com'
-    }
-  })
+      source: 'imgur'
+    };
+  });
 }
 
 //retrieve reddit RSS and convert it into JSON 
@@ -43,12 +43,13 @@ router.get('/ss', (req, res ,next) => {
 router.get('/all', (req, res, next) => {
   return axios.get('https://api.imgur.com/3/gallery/hot', {  
     'headers': {
+      Accept: 'application/json',
       'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
     }
   })
-  .then(results => standardizeImgurData(results.data))
-  .then(data => res.json(data))
-  .catch(err => next(err));
-})
+    .then(results => standardizeImgurData(results.data))
+    .then(data => res.json(data))
+    .catch(err => next(err));
+});
 
 module.exports = router;
