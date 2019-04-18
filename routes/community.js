@@ -40,7 +40,7 @@ router.get('/ss', (req, res ,next) => {
     .catch(err => next(err));
 });
 
-router.get('/', (req, res, next) => {
+router.get('/all', (req, res, next) => {
   return axios.get('https://api.imgur.com/3/gallery/hot', {  
     'headers': {
       'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
