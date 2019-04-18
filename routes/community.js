@@ -16,6 +16,7 @@ function standardizeImgurData(results){
     if(item.tags.length > 0){
       let tagsArr = item.tags[0];
       tag = tagsArr.name;
+
       //capitalize
       // let charCode = tag.charCodeAt(0);
       // tag.replace(String.fromCharCode(charCode), String.fromCharCode((charCode-32)));
