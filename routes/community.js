@@ -8,39 +8,56 @@ const { IMGUR_CLIENT_ID } = require('../config');
 function standardizeImgurData(results){
   return results.data.map(item => {
     let img;
+    let tag;
     if(item.images){
       let imgArr = item.images[0];
       img = imgArr.link;
     }
+    if(item.tags.length > 0){
+      let tagsArr = item.tags[0];
+      tag = tagsArr.name;
+      //capitalize
+      // let charCode = tag.charCodeAt(0);
+      // tag.replace(String.fromCharCode(charCode), String.fromCharCode((charCode-32)));
+    }
+    else{
+      tag='';
+    }
     return {
       url: item.link,
       title: item.title,
-      img: img, 
+      img, 
       publishedAt: item.datetime,
+      category: tag,
       source: 'imgur'
     };
   });
 }
 
+function standardizeRedditData(results){
+  return results.data.children.map(item => {
+    let url;
+    url = 'https://www.reddit.com/'+item.data.permalink;
+    return {
+      url,
+      title: item.data.title,
+      img: item.data.url, 
+      publishedAt: item.data.created_utc,
+      category: item.data.subreddit_name_prefixed,
+      source: 'reddit'
+    };
+  });
+}
+
 //retrieve reddit RSS and convert it into JSON 
-router.get('/ss', (req, res ,next) => {
-  return axios.get('https://feed2json.org/convert?url=https://www.reddit.com/r/all.rss')
-    .then(results => results.data.items.map(item => {
-      // let regex = /src=".*.jpg" alt/g;
-      // let imageStr = regex.exec(item.content_html);
-      // console.log(imageStr[0].replace('src=', '').replace('alt', ''));
-      return{
-        url: item.url,
-        title: item.title,
-        content_html: item.content_html,
-        publishedAt: item.date_published
-      };
-    }))
-    .then(results => res.json(results))
+router.get('/reddit', (req, res ,next) => {
+  return axios.get('https://www.reddit.com/r/all.json')
+    .then(results => standardizeRedditData(results.data))
+    .then(data => res.send(data))
     .catch(err => next(err));
 });
 
-router.get('/all', (req, res, next) => {
+router.get('/imgur', (req, res, next) => {
   return axios.get('https://api.imgur.com/3/gallery/hot', {  
     'headers': {
       Accept: 'application/json',
@@ -48,7 +65,23 @@ router.get('/all', (req, res, next) => {
     }
   })
     .then(results => standardizeImgurData(results.data))
-    .then(data => res.json(data))
+    .then(data => res.send(data))
+    .catch(err => next(err));
+});
+
+router.get('/all', (req, res, next) => {
+  return axios.all([axios.get('https://api.imgur.com/3/gallery/hot', {'headers': {Accept: 'application/json', 'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`}
+  }), axios.get('https://www.reddit.com/r/all.json')])
+    .then(axios.spread((imgurRes, redditRes) => {
+      let output =[];
+      let imgurData = standardizeImgurData(imgurRes.data);
+      let redditData = standardizeRedditData(redditRes.data);
+      output = [...imgurData, ...redditData];
+      return output.sort(function(a, b) {
+        return a.publishedAt > b.publishedAt ? -1 : a.publishedAt < b.publishedAt ? 1 : 0;
+      });
+    }))
+    .then(data => res.send(data))
     .catch(err => next(err));
 });
 
