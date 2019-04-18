@@ -14,5 +14,6 @@ module.exports = {
 
   JWT_SECRET : process.env.JWT_SECRET || 'REPLACE_ME!!!!', 
   JWT_EXPIRY : process.env.JWT_EXPIRY || '7d', 
-  IMGUR_CLIENT_ID: '8668a1f48886476'
+  IMGUR_CLIENT_ID: '8668a1f48886476',
+  MOVIEDB_API_KEY: '70b1183c942fb1a783d79c4ba8ef2b2f'
 };
