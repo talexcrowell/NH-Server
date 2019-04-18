@@ -3,9 +3,27 @@
 const express = require('express');
 const router = express.Router();
 const axios=require('axios');
+const { IMGUR_CLIENT_ID } = require('../config');
+
+function standardizeImgurData(results){
+  return results.data.map(item => {
+    let img;
+    if(item.images){
+      let imgArr = item.images[0];
+      img = imgArr.link;
+    }
+    return{
+      url: item.link,
+      title: item.title,
+      img: img, 
+      publishedAt: item.datetime,
+      source: 'imgur.com'
+    }
+  })
+}
 
 //retrieve reddit RSS and convert it into JSON 
-router.get('/', (req, res ,next) => {
+router.get('/ss', (req, res ,next) => {
   return axios.get('https://feed2json.org/convert?url=https://www.reddit.com/r/all.rss')
     .then(results => results.data.items.map(item => {
       // let regex = /src=".*.jpg" alt/g;
@@ -21,5 +39,16 @@ router.get('/', (req, res ,next) => {
     .then(results => res.json(results))
     .catch(err => next(err));
 });
+
+router.get('/', (req, res, next) => {
+  return axios.get('https://api.imgur.com/3/gallery/hot', {  
+    'headers': {
+      'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
+    }
+  })
+  .then(results => standardizeImgurData(results.data))
+  .then(data => res.json(data))
+  .catch(err => next(err));
+})
 
 module.exports = router;

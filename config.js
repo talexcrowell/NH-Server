@@ -13,5 +13,6 @@ module.exports = {
     process.env.TEST_DATABASE_URL || 'mongodb://localhost:27017/test', 
 
   JWT_SECRET : process.env.JWT_SECRET || 'REPLACE_ME!!!!', 
-  JWT_EXPIRY : process.env.JWT_EXPIRY || '7d'
+  JWT_EXPIRY : process.env.JWT_EXPIRY || '7d', 
+  IMGUR_CLIENT_ID: '8668a1f48886476'
 };
