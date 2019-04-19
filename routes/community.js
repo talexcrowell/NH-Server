@@ -4,53 +4,10 @@ const express = require('express');
 const router = express.Router();
 const axios=require('axios');
 const { IMGUR_CLIENT_ID } = require('../config');
+const { standardizeImgurData, standardizeRedditData } = require('../utils/standardize');
 
-function standardizeImgurData(results){
-  return results.data.map(item => {
-    let img;
-    let tag;
-    if(item.images){
-      let imgArr = item.images[0];
-      img = imgArr.link;
-    }
-    if(item.tags.length > 0){
-      let tagsArr = item.tags[0];
-      tag = tagsArr.name;
 
-      //capitalize
-      // let charCode = tag.charCodeAt(0);
-      // tag.replace(String.fromCharCode(charCode), String.fromCharCode((charCode-32)));
-    }
-    else{
-      tag='';
-    }
-    return {
-      url: item.link,
-      title: item.title,
-      img, 
-      publishedAt: item.datetime,
-      category: tag,
-      source: 'imgur'
-    };
-  });
-}
-
-function standardizeRedditData(results){
-  return results.data.children.map(item => {
-    let url;
-    url = 'https://www.reddit.com/'+item.data.permalink;
-    return {
-      url,
-      title: item.data.title,
-      img: item.data.url, 
-      publishedAt: item.data.created_utc,
-      category: item.data.subreddit_name_prefixed,
-      source: 'reddit'
-    };
-  });
-}
-
-//retrieve reddit RSS and convert it into JSON 
+// retrieve reddit JSON 
 router.get('/reddit', (req, res ,next) => {
   return axios.get('https://www.reddit.com/r/all.json')
     .then(results => standardizeRedditData(results.data))
