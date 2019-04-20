@@ -6,6 +6,7 @@ const axios = require('axios');
 const NewsAPI = require('newsapi');
 const newsapi = new NewsAPI('dc03dbc112374dcdac916e01ee3788de');
 
+
 //retrieve top US headlines
 router.get('/general', (req, res, next) => {
   newsapi.v2.topHeadlines({
