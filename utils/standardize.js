@@ -32,10 +32,8 @@ function standardizeImgurData(results){
       tag = input.name;
     }
     else{
-      tag='';
+      tag=' ';
     }
-
-    //select
 
     //community item structured response
     return {
@@ -84,4 +82,42 @@ function standardizeRedditData(results){
   });
 }
 
-module.exports = {standardizeImgurData, standardizeRedditData};
+function standardizeNewsAPIData(results){
+  return results.articles.map(item => {
+    // placeholders
+    let id;
+    let title;
+    let date;
+    let time;
+    let summary;
+
+    id = `news-${Math.floor(Math.random()*90000)+1}`;
+      
+    //scrub title of trailing source string
+    let titleRegex = / - .*[^']/g;
+    title= item.title.replace(titleRegex, '');
+
+    //retrieve the "time" portion of publishedAt information
+    time = item.publishedAt.replace('T', '').replace('Z', '').slice(10);
+
+    //retrieve the "date" portion of publishedAt information
+    date = item.publishedAt.replace('T', '').replace('Z', '').slice(0, 10);
+    
+    //retrieve the "summary" preview portion
+    let summaryRegex =  /\[.*\]/g;
+    summary = item.description.replace(summaryRegex, '');
+
+    //news item structured response
+    return {
+      id,
+      title,
+      date,
+      time,
+      url: item.url,
+      img: item.urlToImage,
+      source: item.source,
+      summary,
+    };
+  }); 
+}
+module.exports = {standardizeImgurData, standardizeRedditData, standardizeNewsAPIData};
