@@ -80,7 +80,7 @@ router.get('/general', (req, res, next) => {
       }
       // sort by release date and time
       output.sort((a,b)=> new Date(b.date + ' '+ b.time) - new Date(a.date + ' '+ a.time))
-      res.json(output)
+      res.json(output);
     })
     .then(data => res.json(data))
     .catch(err => next(err)); 
