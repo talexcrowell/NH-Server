@@ -7,13 +7,24 @@ function standardizeImgurData(results){
     let img;
     let tag;
     let type;
+    let source;
 
     //select first image in gallery) for preview and retrieve appropriate link
-    if(item.images){
+    if(item.is_album === true){
+      if(item.images.length > 1){
+        source = 'imgur (album)'
+      } else {
+        source = 'imgur'
+      }
       let itemMedia = item.images[0];
 
-      if(item.type === 'video/mp4' || item.type ==='image/gif'){
+      if(itemMedia.type === 'video/mp4'){
         img = itemMedia.mp4;
+        type = 'video/mp4';
+      }
+      else if(itemMedia.type ==='image/gif'){
+        img = itemMedia.mp4;
+        type = 'video/mp4';
       }
       else{
         img = itemMedia.link;
@@ -24,6 +35,7 @@ function standardizeImgurData(results){
     else{
       img = item.link;
       type = item.type; 
+      source = 'imgur'
     }
 
     //select first tag in tags array for category
@@ -32,7 +44,7 @@ function standardizeImgurData(results){
       tag = input.name;
     }
     else{
-      tag=' ';
+      tag='';
     }
 
     //community item structured response
@@ -44,22 +56,29 @@ function standardizeImgurData(results){
       publishedAt: item.datetime,
       category: tag,
       type: type,
-      source: 'imgur'
+      source
     };
   });
 }
 
 function standardizeRedditData(results){
   return results.children.map(item => {
-    //create link for url
+    //create placeholders
     let url = 'https://www.reddit.com'+item.data.permalink;
     let img;
     let type;
+
+
     if(item.data.url.includes('gfycat') === true){
       img = item.data.secure_media.oembed.thumbnail_url;
       type = 'image/gif';
     }
-    else if(item.data.url.endsWith('.jpg') === false && item.data.url.endsWith('.gif') === false && item.data.url.endsWith('.png') === false){
+    else if(item.data.url.endsWith('.gifv')){
+      let convert = item.data.url.replace('.gifv', '.mp4');
+      img = convert;
+      type = 'video/mp4';
+    }
+    else if(item.data.url.endsWith('.jpg') === false && item.data.url.endsWith('.gif') === false && item.data.url.endsWith('.png') === false && item.data.url.endsWith('.gifv') === false){
       img = '';
       type = 'article';
     }
@@ -97,11 +116,13 @@ function standardizeNewsAPIData(results, category){
     let titleRegex = / - .*[^']/g;
     title= item.title.replace(titleRegex, '');
 
+    let localDate= new Date(item.publishedAt).toLocaleString();
+
     //retrieve the "time" portion of publishedAt information
-    time = item.publishedAt.replace('T', '').replace('Z', '').slice(10);
+    time = localDate.replace(',', '').slice(9);
 
     //retrieve the "date" portion of publishedAt information
-    date = item.publishedAt.replace('T', '').replace('Z', '').slice(0, 10);
+    date = localDate.replace(',', '').slice(0, 9);
     
     //retrieve the "summary" preview portion
     let summaryRegex =  /\[.*\]/g;

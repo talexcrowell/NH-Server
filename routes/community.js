@@ -22,8 +22,8 @@ router.get('/imgur', (req, res, next) => {
       'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
     }
   })
-    .then(results => standardizeImgurData(results.data))
-    .then(data => res.send(data))
+    // .then(results => standardizeImgurData(results.data))
+    .then(data => res.send(data.data))
     .catch(err => next(err));
 });
 
