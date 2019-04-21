@@ -59,7 +59,6 @@ router.get('/general', (req, res, next) => {
         output.push(stdBus[i]);
         output.push(stdHealth[i]);
       }
-      console.log(output.length);
       res.json(output)
     })
     .then(data => res.json(data))
