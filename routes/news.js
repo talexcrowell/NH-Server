@@ -9,12 +9,59 @@ const {standardizeNewsAPIData} = require('../utils/standardize');
 
 
 //retrieve top US headlines
-router.get('/general', (req, res, next) => {
+router.get('/us', (req, res, next) => {
   newsapi.v2.topHeadlines({
     language: 'en',
     country: 'us'
   })
     .then(results => standardizeNewsAPIData(results))
+    .then(data => res.json(data))
+    .catch(err => next(err)); 
+});
+
+//hacky gathering of news of different categories
+router.get('/general', (req, res, next) => {
+  return Promise.all([
+    newsapi.v2.topHeadlines({
+      language: 'en',
+      country: 'us',
+      category: 'technology',
+      pageSize: 25
+    }),
+    newsapi.v2.topHeadlines({
+      language: 'en',
+      country: 'us',
+      category: 'science',
+      pageSize: 25
+    }),
+    newsapi.v2.topHeadlines({
+      language: 'en',
+      country: 'us',
+      category: 'business',
+      pageSize: 25
+    }),
+    newsapi.v2.topHeadlines({
+      language: 'en',
+      country: 'us',
+      category: 'health',
+      pageSize: 25
+    })
+  ])
+    .then(([tech, sci, business, health])=> {
+      let output = [];
+      let stdTech = standardizeNewsAPIData(tech, 'Technology');
+      let stdSci = standardizeNewsAPIData(sci, 'Science');
+      let stdBus = standardizeNewsAPIData(business, 'Business');
+      let stdHealth = standardizeNewsAPIData(health, 'Health');
+      for(let i=0; i<25; i++){
+        output.push(stdTech[i]);
+        output.push(stdSci[i]);
+        output.push(stdBus[i]);
+        output.push(stdHealth[i]);
+      }
+      console.log(output.length);
+      res.json(output)
+    })
     .then(data => res.json(data))
     .catch(err => next(err)); 
 });

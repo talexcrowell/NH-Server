@@ -82,7 +82,7 @@ function standardizeRedditData(results){
   });
 }
 
-function standardizeNewsAPIData(results){
+function standardizeNewsAPIData(results, category){
   return results.articles.map(item => {
     // placeholders
     let id;
@@ -105,8 +105,9 @@ function standardizeNewsAPIData(results){
     
     //retrieve the "summary" preview portion
     let summaryRegex =  /\[.*\]/g;
-    summary = item.description.replace(summaryRegex, '');
-
+    if(item.description){
+      summary = item.description.replace(summaryRegex, '');
+    }
     //news item structured response
     return {
       id,
@@ -116,6 +117,7 @@ function standardizeNewsAPIData(results){
       url: item.url,
       img: item.urlToImage,
       source: item.source,
+      category,
       summary,
     };
   }); 
