@@ -78,7 +78,11 @@ function standardizeRedditData(results){
       img = convert;
       type = 'video/mp4';
     }
-    else if(item.data.url.endsWith('.jpg') === false && item.data.url.endsWith('.gif') === false && item.data.url.endsWith('.png') === false && item.data.url.endsWith('.gifv') === false){
+    else if(item.data.is_video === true){
+      img = item.data.media.reddit_video.fallback_url;
+      type = 'video/mp4';
+    }
+    else if(item.data.url.endsWith('.jpg') === false && item.data.url.endsWith('.gif') === false && item.data.url.endsWith('.png') === false){
       img = '';
       type = 'article';
     }

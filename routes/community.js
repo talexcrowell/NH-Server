@@ -6,15 +6,16 @@ const axios=require('axios');
 const { IMGUR_CLIENT_ID } = require('../config');
 const  {standardizeImgurData, standardizeRedditData} = require('../utils/standardize');
 
-// retrieve reddit JSON 
+// test NeighborHound reddit response endpoint
 router.get('/reddit', (req, res ,next) => {
-  return axios.get('https://www.reddit.com/r/all.json')
+  return axios.get('https://www.reddit.com/r/all.json?limit=50')
     .then(response => response.data)
     .then(results => standardizeRedditData(results.data))
     .then(data => res.send(data))
     .catch(err => next(err));
 });
 
+// test NeighborHound imgur response endpoint
 router.get('/imgur', (req, res, next) => {
   return axios.get('https://api.imgur.com/3/gallery/hot', {  
     'headers': {
@@ -22,14 +23,15 @@ router.get('/imgur', (req, res, next) => {
       'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
     }
   })
-    // .then(results => standardizeImgurData(results.data))
-    .then(data => res.send(data.data))
+    .then(results => standardizeImgurData(results.data))
+    .then(data => res.send(data))
     .catch(err => next(err));
 });
 
+// community all endpoint
 router.get('/all', (req, res, next) => {
   return axios.all([axios.get('https://api.imgur.com/3/gallery/hot', {'headers': {Accept: 'application/json', 'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`}
-  }), axios.get('https://www.reddit.com/r/all.json')])
+  }), axios.get('https://www.reddit.com/r/all.json?count=50')])
     .then(axios.spread((imgurRes, redditRes) => {
       let output =[];
       let imgurData = standardizeImgurData(imgurRes.data);

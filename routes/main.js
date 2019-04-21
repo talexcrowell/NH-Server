@@ -1,24 +1,14 @@
 'use strict'; 
 
 const express = require('express');
-const router = express.Router();
-const axios = require('axios');
+const axios=require('axios');
 const NewsAPI = require('newsapi');
-const newsapi = new NewsAPI('dc03dbc112374dcdac916e01ee3788de');
-const {standardizeNewsAPIData} = require('../utils/standardize');
 
+const  {standardizeImgurData, standardizeRedditData, standardizeNewsAPIData} = require('../utils/standardize');
+const { IMGUR_CLIENT_ID, NEWSAPI_CLIENT_ID } = require('../config');
 
-//test endpoint
-router.get('/test', (req, res, next) => {
-  newsapi.v2.topHeadlines({
-    language: 'en',
-    country: 'us',
-    category: 'general'
-  })
-    .then(results => standardizeNewsAPIData(results))
-    .then(data => res.json(data))
-    .catch(err => next(err)); 
-});
+const router = express.Router();
+const newsapi = new NewsAPI(NEWSAPI_CLIENT_ID);
 
 //retrieving data for general feed
 router.get('/general', (req, res, next) => {
@@ -94,13 +84,6 @@ router.get('/general', (req, res, next) => {
     })
     .then(data => res.json(data))
     .catch(err => next(err)); 
-});
-
-//retrieve cybersecurity news
-router.get('/cybersecurity', (req, res ,next) => {
-  return axios.get('https://feed2json.org/convert?url=https://latesthackingnews.com/feed/')
-    .then(results => res.json(results.data.items))
-    .catch(err => next(err));
 });
 
 module.exports = router;
