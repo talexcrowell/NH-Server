@@ -12,9 +12,9 @@ function standardizeImgurData(results){
     //select first image in gallery) for preview and retrieve appropriate link
     if(item.is_album === true){
       if(item.images.length > 1){
-        source = 'imgur (album)'
+        source = 'imgur (album)';
       } else {
-        source = 'imgur'
+        source = 'imgur';
       }
       let itemMedia = item.images[0];
 
@@ -35,7 +35,7 @@ function standardizeImgurData(results){
     else{
       img = item.link;
       type = item.type; 
-      source = 'imgur'
+      source = 'imgur';
     }
 
     //select first tag in tags array for category
