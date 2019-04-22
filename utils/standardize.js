@@ -56,7 +56,8 @@ function standardizeImgurData(results){
       publishedAt: item.datetime,
       category: tag,
       type: type,
-      source
+      source,
+      section: 'community'
     };
   });
 }
@@ -67,7 +68,6 @@ function standardizeRedditData(results){
     let url = 'https://www.reddit.com'+item.data.permalink;
     let img;
     let type;
-
 
     if(item.data.url.includes('gfycat') === true){
       img = item.data.secure_media.oembed.thumbnail_url;
@@ -100,7 +100,8 @@ function standardizeRedditData(results){
       publishedAt: item.data.created_utc,
       category: item.data.subreddit_name_prefixed,
       type,
-      source: 'reddit'
+      source: 'reddit',
+      section: 'community'
     };
   });
 }
@@ -144,7 +145,9 @@ function standardizeNewsAPIData(results, category){
       source: item.source,
       category,
       summary,
+      section: 'news'
     };
   }); 
 }
+
 module.exports = {standardizeImgurData, standardizeRedditData, standardizeNewsAPIData};
