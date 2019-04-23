@@ -36,9 +36,39 @@ function standardizeMovieDBTVData(data){
   });
 }
 
+function standardizeMovieDBMovieData(data){
+  return data.results.map(item => {
+    let genres = [];
+    let genreNumber ={
+      '35': 'Comedy',
+      '12': 'Adventure',
+      '14': 'Fantasy'
+    };
+
+    if(item.genre_ids){
+      for(let i=0; i < item.genre_ids.length; i++){
+        genres.push(genreNumber[`${item.genre_ids[i]}`]);
+      }
+    }
+    let url = `https://www.themoviedb.org/tv/${item.id}`;
+    let img = `https://image.tmdb.org/t/p/w600_and_h900_bestv2${item.poster_path}`;
+    return {
+      title: item.title,
+      movieDbId: item.id,
+      movieDbrating: item.vote_average,
+      url,
+      language: item.original_language,
+      released: item.release_date,
+      img, 
+      overview: item.overview,
+      genres,
+    };
+  });
+}
+
 
 // adds response to database
-router.get('/', (req, res ,next) => {
+router.get('/adadasdasdasd', (req, res ,next) => {
   return axios.all([
     axios.get(`https://api.themoviedb.org/3/tv/popular?api_key=${MOVIEDB_API_KEY}&page=1&region=US`),
     axios.get(`https://api.themoviedb.org/3/tv/popular?api_key=${MOVIEDB_API_KEY}&page=2&region=US`),
@@ -76,13 +106,56 @@ router.get('/', (req, res ,next) => {
     .catch(err => next(err));
 });
 
+//quick api points
+
 router.get('/retrievemovies', (req, res ,next) => {
   knex.select().from('movies')
     .then(results => res.json(results));
 });
+
 router.get('/retrieveshows', (req, res ,next) => {
   knex.select().from('shows')
     .then(results => res.json(results));
+});
+
+
+//
+router.get('/quickrec', (req, res ,next) => {
+  let randomInt = Math.floor(Math.random()*9000)+1;
+  if(randomInt % 2 === 0){
+    return knex.select().from('movies').orderByRaw('RANDOM()')
+      .then(results => res.json(results[0]));
+  }
+  else{
+    return knex.select().from('shows').orderByRaw('RANDOM()')
+      .then(results => res.json(results[0]));
+  }
+
+});
+
+router.get('/catalog', (req, res ,next) => {
+  Promise.all([
+    knex.select().from('movies'),
+    knex.select().from('shows')
+  ])
+    .then(([movieRes, tvRes]) => {
+      let output = [...movieRes, ...tvRes];
+      return output.sort((a,b) => a.title > b.title ? 1 : a.title < b.title ? -1 : 0);
+    })
+    .then(data => res.json(data))
+    .catch(err => next(err));
+});
+
+router.get('/upcoming', (req, res ,next) => {
+  axios.get(`https://api.themoviedb.org/3/movie/upcoming?api_key=${MOVIEDB_API_KEY}&page=1&region=US`)
+    .then(results => standardizeMovieDBMovieData(results.data))
+    .then(data => res.json(data));
+});
+
+router.get('/schedule', (req, res ,next) => {
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&page=1&region=US`)
+    .then(results => standardizeMovieDBTVData(results.data))
+    .then(data => res.json(data));
 });
 
 module.exports = router;
