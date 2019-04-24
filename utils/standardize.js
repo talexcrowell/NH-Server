@@ -69,9 +69,9 @@ function standardizeRedditData(results){
     let img;
     let type;
 
-    if(item.data.url.includes('gfycat') === true){
+    if(item.data.domain.includes('gfycat') === true && item.data.secure_media !== null){
       img = item.data.secure_media.oembed.thumbnail_url;
-      type = 'image/gif';
+      type = 'image/gif'; 
     }
     else if(item.data.url.endsWith('.gifv')){
       let convert = item.data.url.replace('.gifv', '.mp4');
