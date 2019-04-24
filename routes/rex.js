@@ -181,7 +181,7 @@ router.get('/adadasdasdasd', (req, res ,next) => {
     .catch(err => next(err));
 });
 
-//quick api points
+//quick reference endpoints
 
 router.get('/retrievemovies', (req, res ,next) => {
   knex.select().from('movies')
@@ -194,7 +194,7 @@ router.get('/retrieveshows', (req, res ,next) => {
 });
 
 
-//
+//functional endpoints
 router.get('/quickrec', (req, res ,next) => {
   let randomInt = Math.floor(Math.random()*9000)+1;
   if(randomInt % 2 === 0){
@@ -227,9 +227,34 @@ router.get('/upcoming', (req, res ,next) => {
     .then(data => res.json(data));
 });
 
-router.get('/schedule', (req, res ,next) => {
+router.get('/detailstest', (req, res ,next) => {
+  // axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
+  //   .then(results => standardizeMovieDBTVData(results.data))
+  //   .then(data => res.json(data))
+  //   .catch(err => next(err)); 
+
+  axios.get(`https://api.themoviedb.org/3/tv/69050?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
+    // .then(results => standardizeMovieDBTVData(results.data))
+    .then(data => res.json(data.data))
+    .catch(err => next(err));
+});
+
+router.get('/airingtoday', (req, res ,next) => {
   axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&page=1&region=US`)
     .then(results => standardizeMovieDBTVData(results.data))
+    .then(data => res.json(data))
+    .catch(err => next(err));
+});
+
+router.get('/schedule', (req, res ,next) => {
+  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}&page=1&language=en-US`)
+    .then(results => standardizeMovieDBTVData(results.data))
+    .then(data => res.json(data));
+});
+
+router.get('/nowplaying', (req, res ,next) => {
+  axios.get(`https://api.themoviedb.org/3/movie/now_playing?api_key=${MOVIEDB_API_KEY}&page=1&language=en-US`)
+    .then(results => standardizeMovieDBMovieData(results.data))
     .then(data => res.json(data));
 });
 
