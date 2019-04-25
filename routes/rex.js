@@ -88,9 +88,11 @@ function standardizeMovieDBTVData(data){
       }
     ];
 
-    if(item.genre_ids){
-      for(let i=0; i < item.genre_ids.length; i++){
-        genres.push(genreNumber[`${item.genre_ids[i]}`]);
+    if(item.genres){
+      for(let i=0; i < item.genres.length; i++){
+        let find = genreNumber.filter(genre => item.genres[i].id === genre.id)[0];
+        console.log(find);
+        genres.push(find.name);
       }
     }
     let url = `https://www.themoviedb.org/tv/${item.id}`;
@@ -104,7 +106,7 @@ function standardizeMovieDBTVData(data){
       released: item.first_air_date,
       img, 
       overview: item.overview,
-      genres,
+      genres: item.genres,
       type: 'TV'
     };
   });
@@ -192,11 +194,6 @@ function standardizeMovieDBTVDetailsData(data){
       }
     ];
 
-    if(item.genre_ids){
-      for(let i=0; i < item.genre_ids.length; i++){
-        genres.push(genreNumber[`${item.genre_ids[i]}`]);
-      }
-    }
     let url = `https://www.themoviedb.org/tv/${item.id}`;
     let img = `https://image.tmdb.org/t/p/w600_and_h900_bestv2${item.poster_path}`;
     return {
@@ -213,7 +210,7 @@ function standardizeMovieDBTVDetailsData(data){
       totalEpisodes: item.number_of_episodes,
       totalSeasons: item.number_of_seasons,
       networks: item.networks,
-      genres,
+      genres: item.genres,
       type: 'TV'
     };
   });
@@ -370,7 +367,7 @@ router.get('/adadasdasdasd', (req, res ,next) => {
     .catch(err => next(err));
 });
 
-//quick reference endpoints
+//quick reference db endpoints
 
 router.get('/retrievemovies', (req, res ,next) => {
   knex.select().from('movies')
@@ -416,66 +413,65 @@ router.get('/upcoming', (req, res ,next) => {
     .then(data => res.json(data));
 });
 
-router.get('/detailstest', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
-    .then(data => extractIds(data.data))
-    .then(ids => {
-      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}&append_to_response=videos,images`) )
-      return Promise.all(promisified)
-        .then((details) => {
-          let output = [];
-          for(let i=0; i< details.length; i++){
-            output.push(details[i].data)
-          }
-         return output;
-        })
-        .then(results => standardizeMovieDBTVDetailsData(results))
-        .then(data => res.json(data));
-    })
-  
-
-});
-
 router.get('/airingtoday', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&language=en-US&page=1`)
     .then(data => extractIds(data.data))
     .then(ids => {
-      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`) )
+      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
       return Promise.all(promisified)
         .then((details) => {
           let output = [];
           for(let i=0; i< details.length; i++){
-            output.push(details[i].data)
+            output.push(details[i].data);
           }
           return standardizeMovieDBTVDetailsData(output);
-          })
         })
         .then(data => res.json(data))
         .catch(err => next(err));
+    });
 });
 
 router.get('/schedule', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}`)
+  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}&language=en-US&page=1`)
     .then(data => extractIds(data.data))
     .then(ids => {
-      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`) )
+      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
       return Promise.all(promisified)
         .then((details) => {
           let output = [];
           for(let i=0; i< details.length; i++){
-            output.push(details[i].data)
+            output.push(details[i].data);
           }
           return standardizeMovieDBTVDetailsData(output);
-          })
         })
         .then(data => res.json(data))
         .catch(err => next(err));
+    });
 });
 
 router.get('/nowplaying', (req, res ,next) => {
   axios.get(`https://api.themoviedb.org/3/movie/now_playing?api_key=${MOVIEDB_API_KEY}&page=1&language=en-US`)
     .then(results => standardizeMovieDBMovieData(results.data))
     .then(data => res.json(data));
+});
+
+router.get('/detailstest', (req, res ,next) => {
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
+    .then(data => extractIds(data.data))
+    .then(ids => {
+      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}&append_to_response=videos,images`));
+      return Promise.all(promisified)
+        .then((details) => {
+          let output = [];
+          for(let i=0; i< details.length; i++){
+            output.push(details[i].data);
+          }
+          return output;
+        })
+        .then(results => standardizeMovieDBTVDetailsData(results))
+        .then(data => res.json(data));
+    });
+
 });
 
 module.exports = router;
