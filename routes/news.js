@@ -96,6 +96,18 @@ router.get('/general', (req, res, next) => {
     .catch(err => next(err)); 
 });
 
+router.get('/technology', (req, res, next) => {
+  newsapi.v2.topHeadlines({
+    language: 'en',
+    country: 'us',
+    category: 'technology',
+    pageSize: 100
+  })
+    .then(results => standardizeNewsAPIData(results))
+    .then(data => res.json(data))
+    .catch(err => next(err)); 
+});
+
 //retrieve cybersecurity news
 router.get('/cybersecurity', (req, res ,next) => {
   return axios.get('https://feed2json.org/convert?url=https://latesthackingnews.com/feed/')

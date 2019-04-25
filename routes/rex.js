@@ -9,11 +9,84 @@ const { MOVIEDB_API_KEY } = require('../config');
 function standardizeMovieDBTVData(data){
   return data.results.map(item => {
     let genres = [];
-    let genreNumber ={
-      '35': 'Comedy',
-      '12': 'Adventure',
-      '14': 'Fantasy'
-    };
+    let genreNumber =[
+      {
+        'id': 28,
+        'name': 'Action'
+      },
+      {
+        'id': 12,
+        'name': 'Adventure'
+      },
+      {
+        'id': 16,
+        'name': 'Animation'
+      },
+      {
+        'id': 35,
+        'name': 'Comedy'
+      },
+      {
+        'id': 80,
+        'name': 'Crime'
+      },
+      {
+        'id': 99,
+        'name': 'Documentary'
+      },
+      {
+        'id': 18,
+        'name': 'Drama'
+      },
+      {
+        'id': 10751,
+        'name': 'Family'
+      },
+      {
+        'id': 14,
+        'name': 'Fantasy'
+      },
+      {
+        'id': 36,
+        'name': 'History'
+      },
+      {
+        'id': 27,
+        'name': 'Horror'
+      },
+      {
+        'id': 10402,
+        'name': 'Music'
+      },
+      {
+        'id': 9648,
+        'name': 'Mystery'
+      },
+      {
+        'id': 10749,
+        'name': 'Romance'
+      },
+      {
+        'id': 878,
+        'name': 'Science Fiction'
+      },
+      {
+        'id': 10770,
+        'name': 'TV Movie'
+      },
+      {
+        'id': 53,
+        'name': 'Thriller'
+      },
+      {
+        'id': 10752,
+        'name': 'War'
+      },
+      {
+        'id': 37,
+        'name': 'Western'
+      }
+    ];
 
     if(item.genre_ids){
       for(let i=0; i < item.genre_ids.length; i++){
@@ -32,6 +105,116 @@ function standardizeMovieDBTVData(data){
       img, 
       overview: item.overview,
       genres,
+      type: 'TV'
+    };
+  });
+}
+
+function standardizeMovieDBTVDetailsData(data){
+  return data.map(item => {
+    let genres = [];
+    let genreNumber =[
+      {
+        'id': 28,
+        'name': 'Action'
+      },
+      {
+        'id': 12,
+        'name': 'Adventure'
+      },
+      {
+        'id': 16,
+        'name': 'Animation'
+      },
+      {
+        'id': 35,
+        'name': 'Comedy'
+      },
+      {
+        'id': 80,
+        'name': 'Crime'
+      },
+      {
+        'id': 99,
+        'name': 'Documentary'
+      },
+      {
+        'id': 18,
+        'name': 'Drama'
+      },
+      {
+        'id': 10751,
+        'name': 'Family'
+      },
+      {
+        'id': 14,
+        'name': 'Fantasy'
+      },
+      {
+        'id': 36,
+        'name': 'History'
+      },
+      {
+        'id': 27,
+        'name': 'Horror'
+      },
+      {
+        'id': 10402,
+        'name': 'Music'
+      },
+      {
+        'id': 9648,
+        'name': 'Mystery'
+      },
+      {
+        'id': 10749,
+        'name': 'Romance'
+      },
+      {
+        'id': 878,
+        'name': 'Science Fiction'
+      },
+      {
+        'id': 10770,
+        'name': 'TV Movie'
+      },
+      {
+        'id': 53,
+        'name': 'Thriller'
+      },
+      {
+        'id': 10752,
+        'name': 'War'
+      },
+      {
+        'id': 37,
+        'name': 'Western'
+      }
+    ];
+
+    if(item.genre_ids){
+      for(let i=0; i < item.genre_ids.length; i++){
+        genres.push(genreNumber[`${item.genre_ids[i]}`]);
+      }
+    }
+    let url = `https://www.themoviedb.org/tv/${item.id}`;
+    let img = `https://image.tmdb.org/t/p/w600_and_h900_bestv2${item.poster_path}`;
+    return {
+      title: item.name,
+      movieDbId: item.id,
+      movieDbrating: item.vote_average,
+      url,
+      language: item.original_language,
+      released: item.first_air_date,
+      img, 
+      overview: item.overview,
+      lastEpisode: item.last_episode_to_air,
+      nextEpisode: item.next_episode_to_air,
+      totalEpisodes: item.number_of_episodes,
+      totalSeasons: item.number_of_seasons,
+      networks: item.networks,
+      genres,
+      type: 'TV'
     };
   });
 }
@@ -137,15 +320,14 @@ function standardizeMovieDBMovieData(data){
       img, 
       overview: item.overview,
       genres,
+      type: 'TV'
     };
   });
 }
 
 function extractIds(data){
-  return data.map(item => {
-    return{
-      id: item.movieDbId
-    };
+  return data.results.map(item => {
+    return item.id;
   });
 }
 
@@ -236,23 +418,58 @@ router.get('/upcoming', (req, res ,next) => {
 
 router.get('/detailstest', (req, res ,next) => {
   axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
-    // .then(results => standardizeMovieDBTVData(results.data))
-    // .then(data => extractIds(data))
-    .then(data => res.json(data.data))
-    .catch(err => next(err)); 
+    .then(data => extractIds(data.data))
+    .then(ids => {
+      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}&append_to_response=videos,images`) )
+      return Promise.all(promisified)
+        .then((details) => {
+          let output = [];
+          for(let i=0; i< details.length; i++){
+            output.push(details[i].data)
+          }
+         return output;
+        })
+        .then(results => standardizeMovieDBTVDetailsData(results))
+        .then(data => res.json(data));
+    })
+  
+
 });
 
 router.get('/airingtoday', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&page=1&region=US`)
-    .then(results => standardizeMovieDBTVData(results.data))
-    .then(data => res.json(data))
-    .catch(err => next(err));
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
+    .then(data => extractIds(data.data))
+    .then(ids => {
+      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`) )
+      return Promise.all(promisified)
+        .then((details) => {
+          let output = [];
+          for(let i=0; i< details.length; i++){
+            output.push(details[i].data)
+          }
+          return standardizeMovieDBTVDetailsData(output);
+          })
+        })
+        .then(data => res.json(data))
+        .catch(err => next(err));
 });
 
 router.get('/schedule', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}&page=1&language=en-US`)
-    .then(results => standardizeMovieDBTVData(results.data))
-    .then(data => res.json(data));
+  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}`)
+    .then(data => extractIds(data.data))
+    .then(ids => {
+      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`) )
+      return Promise.all(promisified)
+        .then((details) => {
+          let output = [];
+          for(let i=0; i< details.length; i++){
+            output.push(details[i].data)
+          }
+          return standardizeMovieDBTVDetailsData(output);
+          })
+        })
+        .then(data => res.json(data))
+        .catch(err => next(err));
 });
 
 router.get('/nowplaying', (req, res ,next) => {
