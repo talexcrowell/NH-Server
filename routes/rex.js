@@ -141,6 +141,13 @@ function standardizeMovieDBMovieData(data){
   });
 }
 
+function extractIds(data){
+  return data.map(item => {
+    return{
+      id: item.movieDbId
+    };
+  });
+}
 
 // adds response to database
 router.get('/adadasdasdasd', (req, res ,next) => {
@@ -228,15 +235,11 @@ router.get('/upcoming', (req, res ,next) => {
 });
 
 router.get('/detailstest', (req, res ,next) => {
-  // axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
-  //   .then(results => standardizeMovieDBTVData(results.data))
-  //   .then(data => res.json(data))
-  //   .catch(err => next(err)); 
-
-  axios.get(`https://api.themoviedb.org/3/tv/69050?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
     // .then(results => standardizeMovieDBTVData(results.data))
+    // .then(data => extractIds(data))
     .then(data => res.json(data.data))
-    .catch(err => next(err));
+    .catch(err => next(err)); 
 });
 
 router.get('/airingtoday', (req, res ,next) => {
