@@ -322,10 +322,12 @@ function standardizeMovieDBMovieData(data){
   });
 }
 
-function extractIds(data){
-  return data.results.map(item => {
+function extractIdsAndPageNumber(data){
+  let ids = data.results.map(item => {
     return item.id;
   });
+
+  return { page: data.page, total: data.total_pages, ids: [...ids]};
 }
 
 // adds response to database
@@ -414,10 +416,10 @@ router.get('/upcoming', (req, res ,next) => {
 });
 
 router.get('/airingtoday', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&language=en-US&page=1`)
-    .then(data => extractIds(data.data))
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&language=en-US&page=1&limit=15`)
+    .then(data => extractIdsAndPageNumber(data.data))
     .then(ids => {
-      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
+      let promisified = ids.ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
       return Promise.all(promisified)
         .then((details) => {
           let output = [];
@@ -426,16 +428,25 @@ router.get('/airingtoday', (req, res ,next) => {
           }
           return standardizeMovieDBTVDetailsData(output);
         })
-        .then(data => res.json(data))
+        .then(data => {
+          let response = {
+            page: ids.page,
+            totalPages: ids.total,
+            data: [...data]
+          };
+          res.json(response);
+        })
         .catch(err => next(err));
     });
 });
 
-router.get('/schedule', (req, res ,next) => {
-  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}&language=en-US&page=1`)
-    .then(data => extractIds(data.data))
+router.post('/changepage', (req, res, next) => {
+  let { reqPage, schedule } = req.body;
+  console.log(reqPage);
+  axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&language=en-US&page=${reqPage}&limit=15`)
+    .then(data => extractIdsAndPageNumber(data.data))
     .then(ids => {
-      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
+      let promisified = ids.ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
       return Promise.all(promisified)
         .then((details) => {
           let output = [];
@@ -444,7 +455,41 @@ router.get('/schedule', (req, res ,next) => {
           }
           return standardizeMovieDBTVDetailsData(output);
         })
-        .then(data => res.json(data))
+        .then(data => {
+          let response = {
+            page: ids.page,
+            totalPages: ids.total,
+            data: [...data],
+            schedule: schedule
+          };
+          res.json(response);
+        })
+        .catch(err => next(err));
+    });
+
+});
+
+router.get('/schedule', (req, res ,next) => {
+  axios.get(`https://api.themoviedb.org/3/tv/on_the_air?api_key=${MOVIEDB_API_KEY}&language=en-US&page=1`)
+    .then(data => extractIdsAndPageNumber(data.data))
+    .then(ids => {
+      let promisified = ids.ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}`));
+      return Promise.all(promisified)
+        .then((details) => {
+          let output = [];
+          for(let i=0; i< details.length; i++){
+            output.push(details[i].data);
+          }
+          return standardizeMovieDBTVDetailsData(output);
+        })
+        .then(data => {
+          let response = {
+            page: ids.page,
+            totalPages: ids.total,
+            data: [...data]
+          };
+          res.json(response);
+        })
         .catch(err => next(err));
     });
 });
@@ -457,9 +502,10 @@ router.get('/nowplaying', (req, res ,next) => {
 
 router.get('/detailstest', (req, res ,next) => {
   axios.get(`https://api.themoviedb.org/3/tv/airing_today?api_key=${MOVIEDB_API_KEY}&append_to_response=next_episode_to_air`)
-    .then(data => extractIds(data.data))
+    .then(data => extractIdsAndPageNumber(data.data))
     .then(ids => {
-      let promisified = ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}&append_to_response=videos,images`));
+      console.log(ids);
+      let promisified = ids.ids.map(id => axios.get(`https://api.themoviedb.org/3/tv/${id}?api_key=${MOVIEDB_API_KEY}&append_to_response=videos,images`));
       return Promise.all(promisified)
         .then((details) => {
           let output = [];
@@ -469,7 +515,14 @@ router.get('/detailstest', (req, res ,next) => {
           return output;
         })
         .then(results => standardizeMovieDBTVDetailsData(results))
-        .then(data => res.json(data));
+        .then(data => {
+          let response = {
+            page: ids.page,
+            totalPages: ids.total,
+            data: [...data]
+          };
+          res.json(response);
+        });
     });
 
 });

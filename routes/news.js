@@ -63,7 +63,8 @@ router.get('/general', (req, res, next) => {
       let stdBus = standardizeNewsAPIData(business, 'Business');
       let stdHealth = standardizeNewsAPIData(health, 'Health');
       let i=0;
-  //while loading output response to length (100), check if article has already been loaded before to avoid copies 
+      
+      //while loading output response to length (100), check if article has already been loaded before to avoid copies 
       while(output.length < 100){
         // general news check
         if (output.filter((article) => stdGen[i].url === article.url).length === 0){
@@ -89,8 +90,8 @@ router.get('/general', (req, res, next) => {
         i += 1;
       }
       // sort by release date and time
-      output.sort((a,b)=> new Date(b.date + ' '+ b.time) - new Date(a.date + ' '+ a.time))
-      res.json(output)
+      output.sort((a,b)=> new Date(b.date + ' '+ b.time) - new Date(a.date + ' '+ a.time));
+      res.json(output);
     })
     .then(data => res.json(data))
     .catch(err => next(err)); 
