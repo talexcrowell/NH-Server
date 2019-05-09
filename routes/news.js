@@ -57,11 +57,11 @@ router.get('/general', (req, res, next) => {
   //hacky distribution of articles
     .then(([general, tech, sci, business, health])=> {
       let output = [];
-      let stdGen = standardizeNewsAPIData(general, 'General');
-      let stdTech = standardizeNewsAPIData(tech, 'Technology');
-      let stdSci = standardizeNewsAPIData(sci, 'Science');
-      let stdBus = standardizeNewsAPIData(business, 'Business');
-      let stdHealth = standardizeNewsAPIData(health, 'Health');
+      let stdGen = standardizeNewsAPIData(general, 'general');
+      let stdTech = standardizeNewsAPIData(tech, 'technology');
+      let stdSci = standardizeNewsAPIData(sci, 'science');
+      let stdBus = standardizeNewsAPIData(business, 'business');
+      let stdHealth = standardizeNewsAPIData(health, 'health');
       let i=0;
       
       //while loading output response to length (100), check if article has already been loaded before to avoid copies 
@@ -107,13 +107,6 @@ router.get('/technology', (req, res, next) => {
     .then(results => standardizeNewsAPIData(results))
     .then(data => res.json(data))
     .catch(err => next(err)); 
-});
-
-//retrieve cybersecurity news
-router.get('/cybersecurity', (req, res ,next) => {
-  return axios.get('https://feed2json.org/convert?url=https://latesthackingnews.com/feed/')
-    .then(results => res.json(results.data.items))
-    .catch(err => next(err));
 });
 
 module.exports = router;

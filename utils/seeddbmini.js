@@ -21,11 +21,11 @@ function seedDBmini(start, end=(start+15)){
       return knex.insert(output).into('shows');
     })
     .then(() =>{
-      console.log({Message: `Shows updated starting at id:${start} and ending at id:${end}`});
+      console.log({Message: `Shows updated starting at id:${start} and ending at id:${end-1}`});
       return;
     })
     .catch(err => console.log(err));
 }
 
-seedDBmini(102);
+seedDBmini(145,145);
 
