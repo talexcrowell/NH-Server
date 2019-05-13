@@ -471,6 +471,22 @@ function standardizeRedditData(results){
   });
 }
 
+function standardizeGiphyData(results){
+  return results.data.map(item => {
+    return {
+      id: item.id,
+      url: item.url,
+      title: item.title,
+      img: item.embed_url, 
+      publishedAt: item.trending_datetime.slice(11, item.trending_datetime.length),
+      category: '',
+      type: 'image/'+item.type,
+      source: 'giphy',
+      section: 'community'
+    };
+  });
+}
+
 function standardizeNewsAPIData(results, category){
   return results.articles.map(item => {
     // placeholders
@@ -515,4 +531,4 @@ function standardizeNewsAPIData(results, category){
   }); 
 }
 
-module.exports = {standardizeImgurData, standardizeRedditData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
+module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
