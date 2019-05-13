@@ -477,7 +477,7 @@ function standardizeGiphyData(results){
       id: item.id,
       url: item.url,
       title: item.title,
-      img: item.embed_url, 
+      img: item.images.original.url, 
       publishedAt: item.trending_datetime.slice(11, item.trending_datetime.length),
       category: '',
       type: 'image/'+item.type,
