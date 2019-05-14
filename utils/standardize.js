@@ -487,6 +487,39 @@ function standardizeGiphyData(results){
   });
 }
 
+function standardizeGfycatData(results){
+  return results.gfycats.map(item => {
+    return {
+      id: item.md5,
+      url: 'https://gfycat.com/'+item.gfyId+'-'+item.gfySlug,
+      title: item.title,
+      img: item.mp4Url, 
+      publishedAt: item.createDate,
+      category: item.tags[0],
+      type: 'video/mp4',
+      source: 'gfycat',
+      section: 'community'
+    };
+  });
+}
+function standardizeVimeoData(results){
+  return results.data.map(item => {
+    let id= item.uri.replace('/videos/', '');
+    
+    return {
+      id,
+      url: item.link,
+      title: item.name,
+      img: (item.embed.html ? item.embed.html : '') , 
+      publishedAt: item.created_time,
+      category: (item.tags.length > 0 ? item.tags[0].name : ''),
+      type: 'video/vimeo',
+      source: 'vimeo',
+      section: 'community'
+    };
+  });
+}
+
 function standardizeNewsAPIData(results, category){
   return results.articles.map(item => {
     // placeholders
@@ -531,4 +564,4 @@ function standardizeNewsAPIData(results, category){
   }); 
 }
 
-module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
+module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
