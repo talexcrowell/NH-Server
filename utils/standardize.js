@@ -541,6 +541,23 @@ function standardizeYoutubeData(results){
   });
 }
 
+function standardizeDeviantArtData(results){
+  return results.results.map(item => {
+    
+    return {
+      id: item.deviationid,
+      url: item.url,
+      title: item.title,
+      img: (item.content ? item.content.src : ''), 
+      publishedAt: item.published_time,
+      category: item.category,
+      type: 'image/jpg',
+      source: 'deviantart',
+      section: 'community'
+    };
+  });
+}
+
 function standardizeNewsAPIData(results, category){
   return results.articles.map(item => {
     // placeholders
@@ -585,4 +602,4 @@ function standardizeNewsAPIData(results, category){
   }); 
 }
 
-module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeYoutubeData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
+module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeYoutubeData, standardizeDeviantArtData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
