@@ -3,8 +3,8 @@
 const express = require('express');
 const router = express.Router();
 const axios=require('axios');
-const { IMGUR_CLIENT_ID , GIPHY_API_KEY, VIMEO_CLIENT_TOKEN} = require('../config');
-const  {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData} = require('../utils/standardize');
+const { IMGUR_CLIENT_ID , GIPHY_API_KEY, VIMEO_CLIENT_TOKEN, YOUTUBE_API_KEY} = require('../config');
+const  {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeYoutubeData} = require('../utils/standardize');
 
 // test NeighborHound reddit response endpoint
 router.get('/reddit', (req, res ,next) => {
@@ -58,13 +58,13 @@ router.get('/vimeo', (req, res ,next) => {
     .catch(err => next(err));
 });
 
-// test NeighborHound deviant art response endpoint
-// router.get('/deviantart', (req, res, next) => {
-//   return axios.get(`http://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=50;`)
-//     .then(results => standardizeGiphyData(results.data))
-//     .then(data => res.send(data))
-//     .catch(err => next(err));
-// });
+// test NeighborHound youtube response endpoint
+router.get('/youtube', (req, res, next) => {
+  return axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`)
+    .then(results => standardizeYoutubeData(results.data))
+    .then(data => res.send(data))
+    .catch(err => next(err));
+});
 
 // community all endpoint
 router.get('/all', (req, res, next) => {
@@ -77,17 +77,20 @@ router.get('/all', (req, res, next) => {
         'Authorization': `Bearer ${VIMEO_CLIENT_TOKEN}`
       }
     }),
-    axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25')
+    axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25'),
+    axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`)
   ])
-    .then(axios.spread((imgurRes, redditRes, vimeoRes, gfycatRes) => {
+    .then(axios.spread((imgurRes, redditRes, vimeoRes, gfycatRes, youtubeRes) => {
       let output =[];
       let imgurData = standardizeImgurData(imgurRes.data);
       let redditData = standardizeRedditData(redditRes.data.data);
       let vimeoData = standardizeVimeoData(vimeoRes.data);
       let gfycatData = standardizeGfycatData(gfycatRes.data);
+      let youtubeData = standardizeYoutubeData(youtubeRes.data);
       // console.log(imgurData.length, redditData.length, vimeoData.length, gfycatData.length);
       for(let i=0; i < 20; i++ ){
         output.push(redditData[i]);
+        output.push(youtubeData[i]);
         output.push(imgurData[i]);
         output.push(vimeoData[i]);
         output.push(gfycatData[i]);

@@ -501,7 +501,9 @@ function standardizeGfycatData(results){
       section: 'community'
     };
   });
+
 }
+
 function standardizeVimeoData(results){
   return results.data.map(item => {
     let id= item.uri.replace('/videos/', '');
@@ -515,6 +517,25 @@ function standardizeVimeoData(results){
       category: (item.tags.length > 0 ? item.tags[0].name : ''),
       type: 'video/vimeo',
       source: 'vimeo',
+      section: 'community'
+    };
+  });
+}
+
+function standardizeYoutubeData(results){
+  return results.items.map(item => {
+    let url = `https://www.youtube.com/watch?v=${item.id}`;
+    let img = `https://www.youtube.com/embed/${item.id}`;
+    
+    return {
+      id: item.id,
+      url,
+      title: item.snippet.title,
+      img: img, 
+      publishedAt: item.snippet.publishedAt,
+      category: (item.snippet.tags ? item.snippet.tags[0] : ''),
+      type: 'video/youtube',
+      source: 'youtube',
       section: 'community'
     };
   });
@@ -564,4 +585,4 @@ function standardizeNewsAPIData(results, category){
   }); 
 }
 
-module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
+module.exports = {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeYoutubeData, standardizeNewsAPIData, standardizeMovieDBTVMini, standardizeMovieDBTVData, standardizeMovieDBTVDetailsData, standardizeMovieDBTVShowDetailsData, standardizeMovieDBMovieData};
