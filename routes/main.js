@@ -4,8 +4,8 @@ const express = require('express');
 const axios=require('axios');
 const NewsAPI = require('newsapi');
 
-const  {standardizeImgurData, standardizeRedditData, standardizeNewsAPIData} = require('../utils/standardize');
-const { IMGUR_CLIENT_ID, NEWSAPI_CLIENT_ID } = require('../config');
+const  {standardizeImgurData, standardizeRedditData, standardizeNewsAPIData, standardizeVimeoData, standardizeGfycatData, standardizeYoutubeData, standardizeDeviantArtData} = require('../utils/standardize');
+const { IMGUR_CLIENT_ID, NEWSAPI_CLIENT_ID, VIMEO_CLIENT_TOKEN, DEVIANTART_ACCESS_TOKEN } = require('../config');
 
 const router = express.Router();
 const newsapi = new NewsAPI(NEWSAPI_CLIENT_ID);
@@ -43,16 +43,21 @@ router.get('/', (req, res, next) => {
       category: 'health',
       pageSize: 25
     }),
-    axios.get('https://api.imgur.com/3/gallery/hot', {
+    axios.get('https://api.imgur.com/3/gallery/hot', {'headers': {Accept: 'application/json', 'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`}}), 
+    axios.get('https://www.reddit.com/r/all.json?count=50'),
+    axios.get('https://api.vimeo.com/videos?filter=trending',{
+      'method': 'GET',
       'headers': {
-        Accept: 'application/json', 
-        'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
+        Accept: 'application/json',
+        'Authorization': `Bearer ${VIMEO_CLIENT_TOKEN}`
       }
-    }), 
-    axios.get('https://www.reddit.com/r/all.json?count=50')
+    }),
+    axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25'),
+    axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`),
+    axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${DEVIANTART_ACCESS_TOKEN}&limit=25`)
   ])
   //hacky distribution of articles
-    .then(([general, tech, sci, business, health, imgur, reddit])=> {
+    .then(([general, tech, sci, business, health, imgur, reddit, vimeo, gfycat, youtube, deviantart])=> {
       let newsArr = [];
       let output = [];
       let stdGen = standardizeNewsAPIData(general, 'General');
@@ -62,10 +67,11 @@ router.get('/', (req, res, next) => {
       let stdHealth = standardizeNewsAPIData(health, 'Health');
       let stdReddit = standardizeRedditData(reddit.data.data);
       let stdImgur = standardizeImgurData(imgur.data);
+      let stdVimeo = standardizeVimeoData(vimeo.data);
+      let stdGfycat = standardizeGfycatData(gfycat.data);
+      let stdYoutube = standardizeYoutubeData(youtube.data);
+      let stdDeviantart = standardizeDeviantArtData(deviantart.data);
       let i=0;
-      
-      //loading community content into single array
-      let commArr = [...stdReddit, ...stdImgur];
 
       //while loading output response to length (100), check if article has already been loaded before to avoid copies 
       while(newsArr.length < 100){
@@ -94,6 +100,17 @@ router.get('/', (req, res, next) => {
       }
       // sort news by release date and time (community already sorted to trending)
       newsArr.sort((a,b)=> new Date(b.date + ' '+ b.time) - new Date(a.date + ' '+ a.time));
+      
+      //loading community content into single array
+      let commArr = [];
+      for(let i=0; i < 20; i++ ){
+        commArr.push(stdReddit[i]);
+        commArr.push(stdYoutube[i]);
+        commArr.push(stdImgur[i]);
+        commArr.push(stdVimeo[i]);
+        commArr.push(stdGfycat[i]);
+        commArr.push(stdDeviantart[i]);
+      }
       
       //hacky 1:1 add into output array (maybe user patterns?)
       for(let i=0; i < 75; i++){

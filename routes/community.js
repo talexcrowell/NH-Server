@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const axios=require('axios');
-const { IMGUR_CLIENT_ID , GIPHY_API_KEY, VIMEO_CLIENT_TOKEN, YOUTUBE_API_KEY, DEVIANTART_ACCESS_TOKEN} = require('../config');
+const { IMGUR_CLIENT_ID , GIPHY_API_KEY, VIMEO_CLIENT_TOKEN, YOUTUBE_API_KEY, DEVIANTART_CLIENT_ID, DEVIANTART_CLIENT_SECRET} = require('../config');
 const  {standardizeImgurData, standardizeRedditData, standardizeGiphyData, standardizeGfycatData, standardizeVimeoData, standardizeYoutubeData, standardizeDeviantArtData} = require('../utils/standardize');
 
 // test NeighborHound reddit response endpoint
@@ -68,7 +68,8 @@ router.get('/youtube', (req, res, next) => {
 
 // test NeighborHound deviant art response endpoint
 router.get('/deviantart', (req, res, next) => {
-  return axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${DEVIANTART_ACCESS_TOKEN}&limit=25`)
+  axios.get(`https://www.deviantart.com/oauth2/token?grant_type=client_credentials&client_id=${DEVIANTART_CLIENT_ID}&client_secret=${DEVIANTART_CLIENT_SECRET}`)
+    .then(results => axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${results.data.access_token}&limit=25`))
     .then(results => standardizeDeviantArtData(results.data))
     .then(data => res.send(data))
     .catch(err => next(err));
@@ -76,19 +77,22 @@ router.get('/deviantart', (req, res, next) => {
 
 // community all endpoint
 router.get('/all', (req, res, next) => {
-  return axios.all([axios.get('https://api.imgur.com/3/gallery/hot', {'headers': {Accept: 'application/json', 'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`}}), 
-    axios.get('https://www.reddit.com/r/all.json?count=50'),
-    axios.get('https://api.vimeo.com/videos?filter=trending',{
-      'method': 'GET',
-      'headers': {
-        Accept: 'application/json',
-        'Authorization': `Bearer ${VIMEO_CLIENT_TOKEN}`
-      }
-    }),
-    axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25'),
-    axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`),
-    axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${DEVIANTART_ACCESS_TOKEN}&limit=25`)
-  ])
+  return axios.get(`https://www.deviantart.com/oauth2/token?grant_type=client_credentials&client_id=${DEVIANTART_CLIENT_ID}&client_secret=${DEVIANTART_CLIENT_SECRET}`)
+    .then(results => {
+      return axios.all([axios.get('https://api.imgur.com/3/gallery/hot', {'headers': {Accept: 'application/json', 'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`}}), 
+        axios.get('https://www.reddit.com/r/all.json?count=50'),
+        axios.get('https://api.vimeo.com/videos?filter=trending',{
+          'method': 'GET',
+          'headers': {
+            Accept: 'application/json',
+            'Authorization': `Bearer ${VIMEO_CLIENT_TOKEN}`
+          }
+        }),
+        axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25'),
+        axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`),
+        axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${results.data.access_token}&limit=25`)
+      ]);
+    })
     .then(axios.spread((imgurRes, redditRes, vimeoRes, gfycatRes, youtubeRes, daRes) => {
       let output =[];
       let imgurData = standardizeImgurData(imgurRes.data);
