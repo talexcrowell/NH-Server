@@ -38,9 +38,9 @@ router.get('/giphy', (req, res, next) => {
 
 // test NeighborHound gfycat response endpoint
 router.get('/gfycat', (req, res ,next) => {
-  return axios.get('https://api.gfycat.com/v1/gfycats/popular')
-    .then(results => standardizeGfycatData(results.data))
-    .then(data => res.send(data))
+  return axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25')
+    // .then(results => standardizeGfycatData(results.data))
+    .then(data => res.send(data.data))
     .catch(err => next(err));
 });
 
@@ -101,7 +101,6 @@ router.get('/all', (req, res, next) => {
       let gfycatData = standardizeGfycatData(gfycatRes.data);
       let youtubeData = standardizeYoutubeData(youtubeRes.data);
       let daData = standardizeDeviantArtData(daRes.data);
-      // console.log(imgurData.length, redditData.length, vimeoData.length, gfycatData.length);
       for(let i=0; i < 20; i++ ){
         output.push(redditData[i]);
         output.push(youtubeData[i]);

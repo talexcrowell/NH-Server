@@ -149,6 +149,7 @@ router.get('/all', (req, res, next) => {
       for(let i=0; i < 75; i++){
         output.push(newsArr[i]);
       } 
+      console.log('comm all', output.length);
       return output;
     })
     .then(data => res.json(data))

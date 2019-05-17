@@ -490,7 +490,7 @@ function standardizeGiphyData(results){
 function standardizeGfycatData(results){
   return results.gfycats.map(item => {
     return {
-      id: item.md5,
+      id: item.gfyNumber,
       url: 'https://gfycat.com/'+item.gfyId+'-'+item.gfySlug,
       title: item.title,
       img: item.mp4Url, 
