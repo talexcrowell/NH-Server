@@ -1,4 +1,5 @@
 'use strict';
+
 //rex functions
 function standardizeMovieDBTVMini(data){
   return data.map(show => {
@@ -365,7 +366,7 @@ function standardizeMovieDBMovieData(data){
   });
 }
 
-// fetch functions
+// fetch community standardization
 function standardizeImgurData(results){
   return results.data.map(item => {
     // scope placeholders
@@ -373,8 +374,9 @@ function standardizeImgurData(results){
     let tag;
     let type;
     let source;
+    let shareUrl;
 
-    //select first image in gallery) for preview and retrieve appropriate link
+    //select first image in gallery for preview and retrieve appropriate link
     if(item.is_album === true){
       if(item.images.length > 1){
         source = 'imgur (album)';
@@ -385,20 +387,24 @@ function standardizeImgurData(results){
 
       if(itemMedia.type === 'video/mp4'){
         img = itemMedia.mp4;
+        shareUrl = itemMedia.gifv;
         type = 'video/mp4';
       }
       else if(itemMedia.type ==='image/gif'){
         img = itemMedia.mp4;
+        shareUrl = itemMedia.gifv;
         type = 'video/mp4';
       }
       else{
         img = itemMedia.link;
+        shareUrl = itemMedia.link;
         type = itemMedia.type;
       }
     }
     //select image if not in a gallery
     else{
       img = item.link;
+      shareUrl = item.link;
       type = item.type; 
       source = 'imgur';
     }
@@ -417,11 +423,13 @@ function standardizeImgurData(results){
       id: item.id,
       url: item.link,
       title: item.title,
-      img, 
+      img,
+      shareUrl, 
       publishedAt: item.datetime,
       category: tag,
       type: type,
       source,
+      sourceUrl: 'https://imgur.com',
       section: 'community'
     };
   });
@@ -558,6 +566,7 @@ function standardizeDeviantArtData(results){
   });
 }
 
+// fetch news standardization
 function standardizeNewsAPIData(results, category){
   return results.articles.map(item => {
     // placeholders

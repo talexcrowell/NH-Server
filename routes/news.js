@@ -156,4 +156,16 @@ router.get('/all', (req, res, next) => {
     .catch(err => next(err)); 
 });
 
+router.post('/search', (req, res, next) =>{
+  let {query, filter} = req.body;
+  
+  return newsapi.v2.everything({
+    q: query,
+    language: 'en'
+  })
+    .then(results => standardizeNewsAPIData(results))
+    .then(data => res.json(data))
+    .catch(err => next(err));
+});
+
 module.exports = router;
