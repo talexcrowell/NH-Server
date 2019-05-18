@@ -441,26 +441,32 @@ function standardizeRedditData(results){
     let url = 'https://www.reddit.com'+item.data.permalink;
     let img;
     let type;
+    let shareUrl;
 
     if(item.data.domain.includes('gfycat') === true && item.data.secure_media !== null){
-      img = item.data.secure_media.oembed.thumbnail_url;
-      type = 'image/gif'; 
+      img = item.data.secure_media_embed.media_domain_url;
+      shareUrl = item.data.url;
+      type = 'video/embed'; 
     }
     else if(item.data.url.endsWith('.gifv')){
       let convert = item.data.url.replace('.gifv', '.mp4');
+      shareUrl = item.data.url;
       img = convert;
       type = 'video/mp4';
     }
     else if(item.data.is_video === true){
       img = item.data.media.reddit_video.fallback_url;
+      shareUrl = item.data.url;
       type = 'video/mp4';
     }
     else if(item.data.url.endsWith('.jpg') === false && item.data.url.endsWith('.gif') === false && item.data.url.endsWith('.png') === false){
       img = '';
+      shareUrl = item.data.url;
       type = 'article';
     }
     else{
       img = item.data.url;
+      shareUrl = item.data.url;
       type = 'image/jpg';
     }
 
@@ -470,9 +476,11 @@ function standardizeRedditData(results){
       url,
       title: item.data.title,
       img: img, 
+      shareUrl,
       publishedAt: item.data.created_utc,
       category: item.data.subreddit_name_prefixed,
       type,
+      sourceUrl: 'https://www.reddit.com',
       source: 'reddit',
       section: 'community'
     };
@@ -542,7 +550,7 @@ function standardizeYoutubeData(results){
       img: img, 
       publishedAt: item.snippet.publishedAt,
       category: (item.snippet.tags ? item.snippet.tags[0] : ''),
-      type: 'video/youtube',
+      type: 'video/embed',
       source: 'youtube',
       section: 'community'
     };
