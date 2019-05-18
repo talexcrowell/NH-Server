@@ -31,16 +31,16 @@ router.get('/imgur', (req, res, next) => {
 // test NeighborHound giphy response endpoint
 router.get('/giphy', (req, res, next) => {
   return axios.get(`http://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=50;`)
-    .then(results => standardizeGiphyData(results.data))
-    .then(data => res.send(data))
+    // .then(results => standardizeGiphyData(results.data))
+    .then(data => res.send(data.data))
     .catch(err => next(err));
 });
 
 // test NeighborHound gfycat response endpoint
 router.get('/gfycat', (req, res ,next) => {
   return axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25')
-    // .then(results => standardizeGfycatData(results.data))
-    .then(data => res.send(data.data))
+    .then(results => standardizeGfycatData(results.data))
+    .then(data => res.send(data))
     .catch(err => next(err));
 });
 

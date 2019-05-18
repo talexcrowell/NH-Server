@@ -493,7 +493,7 @@ function standardizeGiphyData(results){
       id: item.id,
       url: item.url,
       title: item.title,
-      img: item.images.original.url, 
+      img: item.images.original.url,
       publishedAt: item.trending_datetime.slice(11, item.trending_datetime.length),
       category: '',
       type: 'image/'+item.type,
@@ -509,10 +509,12 @@ function standardizeGfycatData(results){
       id: item.gfyNumber,
       url: 'https://gfycat.com/'+item.gfyId+'-'+item.gfySlug,
       title: item.title,
-      img: item.mp4Url, 
+      img: item.mp4Url,
+      shareUrl: item.mp4Url,
       publishedAt: item.createDate,
       category: item.tags[0],
       type: 'video/mp4',
+      sourceUrl: 'https://gfycat.com',
       source: 'gfycat',
       section: 'community'
     };
@@ -528,10 +530,12 @@ function standardizeVimeoData(results){
       id,
       url: item.link,
       title: item.name,
-      img: (item.embed.html ? item.embed.html : '') , 
+      img: (item.embed.html ? item.embed.html : ''),
+      shareUrl: item.link, 
       publishedAt: item.created_time,
       category: (item.tags.length > 0 ? item.tags[0].name : ''),
       type: 'video/vimeo',
+      sourceUrl:'https://vimeo.com',
       source: 'vimeo',
       section: 'community'
     };
@@ -540,17 +544,18 @@ function standardizeVimeoData(results){
 
 function standardizeYoutubeData(results){
   return results.items.map(item => {
-    let url = `https://www.youtube.com/watch?v=${item.id}`;
     let img = `https://www.youtube.com/embed/${item.id}`;
     
     return {
       id: item.id,
-      url,
+      url: item.url,
       title: item.snippet.title,
-      img: img, 
+      img: img,
+      shareUrl: item.url, 
       publishedAt: item.snippet.publishedAt,
       category: (item.snippet.tags ? item.snippet.tags[0] : ''),
       type: 'video/embed',
+      sourceUrl: 'https://www.youtube.com',
       source: 'youtube',
       section: 'community'
     };
@@ -564,10 +569,12 @@ function standardizeDeviantArtData(results){
       id: item.deviationid,
       url: item.url,
       title: item.title,
-      img: (item.content ? item.content.src : ''), 
+      img: (item.content ? item.content.src : ''),
+      shareUrl: item.url, 
       publishedAt: item.published_time,
       category: item.category,
       type: 'image/jpg',
+      sourceUrl:'https://www.deviantart.com',
       source: 'deviantart',
       section: 'community'
     };
