@@ -15,7 +15,7 @@ router.get('/test', (req, res, next) => {
     country: 'us',
     category: 'general'
   })
-    .then(results => standardizeNewsAPIData(results))
+    // .then(results => standardizeNewsAPIData(results))
     .then(data => res.json(data))
     .catch(err => next(err)); 
 });
@@ -157,15 +157,18 @@ router.get('/all', (req, res, next) => {
 });
 
 router.post('/search', (req, res, next) =>{
-  let {query, filter} = req.body;
+  let {query} = req.body;
   
   return newsapi.v2.everything({
     q: query,
-    language: 'en'
+    language: 'en',
   })
-    .then(results => standardizeNewsAPIData(results))
+    .then(results => standardizeNewsAPIData(results, 'Search'))
     .then(data => res.json(data))
     .catch(err => next(err));
+  
+
+  
 });
 
 module.exports = router;

@@ -115,4 +115,60 @@ router.get('/all', (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.post('/search', (req, res, next) => {
+  let {query, source, nsfw} = req.body;
+  console.log(query, source, nsfw);
+  switch(source){
+  case 'reddit':
+    axios.get('https://www.reddit.com/r/all.json?limit=50')
+      .then(response => response.data)
+      .then(results => standardizeRedditData(results.data))
+      .then(data => res.send(data))
+      .catch(err => next(err));
+    break;
+  case 'youtube':
+    axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`)
+      .then(results => standardizeYoutubeData(results.data))
+      .then(data => res.send(data))
+      .catch(err => next(err));
+    break;
+  case 'imgur':
+    axios.get('https://api.imgur.com/3/gallery/hot', {  
+      'headers': {
+        Accept: 'application/json',
+        'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
+      }
+    })
+      .then(results => standardizeImgurData(results.data))
+      .then(data => res.send(data))
+      .catch(err => next(err));
+    break;
+  case 'vimeo':
+    axios.get('https://api.vimeo.com/videos?filter=trending',{
+      'method': 'GET',
+      'headers': {
+        Accept: 'application/json',
+        'Authorization': `Bearer ${VIMEO_CLIENT_TOKEN}`
+      }
+    })
+      .then(results => standardizeVimeoData(results.data))
+      .then(data => res.send(data))
+      .catch(err => next(err));
+    break;
+  case 'gfycat':
+    axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25')
+      .then(results => standardizeGfycatData(results.data))
+      .then(data => res.send(data))
+      .catch(err => next(err));
+    break;
+  case 'deviantart':
+    axios.get(`https://www.deviantart.com/oauth2/token?grant_type=client_credentials&client_id=${DEVIANTART_CLIENT_ID}&client_secret=${DEVIANTART_CLIENT_SECRET}`)
+      .then(results => axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${results.data.access_token}&limit=25`))
+      .then(results => standardizeDeviantArtData(results.data))
+      .then(data => res.send(data))
+      .catch(err => next(err));
+    break;   
+  }
+});
+
 module.exports = router;
