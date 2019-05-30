@@ -120,20 +120,20 @@ router.post('/search', (req, res, next) => {
   console.log(query, source, nsfw);
   switch(source){
   case 'reddit':
-    axios.get('https://www.reddit.com/r/all.json?limit=50')
+    axios.get(`https://www.reddit.com/search.json?q=${query}&limit=50`)
       .then(response => response.data)
       .then(results => standardizeRedditData(results.data))
       .then(data => res.send(data))
       .catch(err => next(err));
     break;
   case 'youtube':
-    axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular&maxResults=25&regionCode=US&key=${YOUTUBE_API_KEY}`)
-      .then(results => standardizeYoutubeData(results.data))
-      .then(data => res.send(data))
+    axios.get(`GET https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=${query}&key=${YOUTUBE_API_KEY}`)
+      // .then(results => standardizeYoutubeData(results.data))
+      .then(data => res.send(data.data))
       .catch(err => next(err));
     break;
   case 'imgur':
-    axios.get('https://api.imgur.com/3/gallery/hot', {  
+    axios.get(`https://api.imgur.com/3/gallery/search?q=${query}`, {  
       'headers': {
         Accept: 'application/json',
         'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
@@ -156,19 +156,28 @@ router.post('/search', (req, res, next) => {
       .catch(err => next(err));
     break;
   case 'gfycat':
-    axios.get('https://api.gfycat.com/v1/gfycats/trending?count=25')
+    axios.get(`https://api.gfycat.com/v1/gfycats/search?search_text=${query}`)
       .then(results => standardizeGfycatData(results.data))
       .then(data => res.send(data))
       .catch(err => next(err));
     break;
   case 'deviantart':
     axios.get(`https://www.deviantart.com/oauth2/token?grant_type=client_credentials&client_id=${DEVIANTART_CLIENT_ID}&client_secret=${DEVIANTART_CLIENT_SECRET}`)
-      .then(results => axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/hot?access_token=${results.data.access_token}&limit=25`))
+      .then(results => axios.get(`https://www.deviantart.com/api/v1/oauth2/browse/tags?tag=${query}&mature_content=${nsfw}&access_token=${results.data.access_token}&limit=25`))
       .then(results => standardizeDeviantArtData(results.data))
       .then(data => res.send(data))
       .catch(err => next(err));
     break;   
   }
 });
+
+// router.post('/custom', (req, res, next) => {
+//   let {query} = req.body;
+//   return axios.get(`https://www.reddit.com/r/${query}.json?limit=50`)
+//     .then(response => response.data)
+//     .then(results => standardizeRedditData(results.data))
+//     .then(data => res.send(data))
+//     .catch(err => next(err));
+// });
 
 module.exports = router;

@@ -439,14 +439,12 @@ function standardizeRedditData(results){
   return results.children.map(item => {
     //create placeholders
     let url = 'https://www.reddit.com'+item.data.permalink;
-    let img;
-    let type;
-    let shareUrl;
+    let img, type, shareUrl, nsfw;
 
     if(item.data.domain.includes('gfycat') === true && item.data.secure_media !== null){
-      img = item.data.secure_media_embed.media_domain_url;
+      img = item.data.media.oembed.thumbnail_url.replace('thumbs', 'giant').replace('-size_restricted.gif', '.mp4');
       shareUrl = item.data.url;
-      type = 'video/embed'; 
+      type = 'video/mp4'; 
     }
     else if(item.data.url.endsWith('.gifv')){
       let convert = item.data.url.replace('.gifv', '.mp4');
@@ -470,6 +468,13 @@ function standardizeRedditData(results){
       type = 'image/jpg';
     }
 
+    if(item.data.over_18 === true){
+      nsfw = true;
+    }
+    else {
+      nsfw = false;
+    }
+
     //community item structured response
     return {
       id: item.data.id,
@@ -480,6 +485,7 @@ function standardizeRedditData(results){
       publishedAt: item.data.created_utc,
       category: item.data.subreddit_name_prefixed,
       type,
+      nsfw,
       sourceUrl: 'https://www.reddit.com',
       source: 'reddit',
       section: 'community'
